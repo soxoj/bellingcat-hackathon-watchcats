@@ -1,9 +1,13 @@
 # Adana: Analytical DAshboard (for NArratives)
 
-Analytical tool to extract insights (shown on a simple dashboard) from social media posts about narratives, sentiments, initiators, influencers and clusters of accounts.
-It should be applicable for studying disinformation campaigns, analysing public opinion, and assessing risks related to some topics.
+1-click analytical dashboard for OSINT researchers
+
+####  👉 [Try Adana online](https://bellingcat-hackathon-watchcats-uearyc7iggn84xznppgq5k.streamlit.app/)
 
 ## The idea
+
+Analytical tool to extract insights (shown on a simple dashboard) from social media posts about narratives, sentiments, initiators, influencers and clusters of accounts.
+It should be applicable for studying disinformation campaigns, analysing public opinion, and assessing risks related to some topics.
 
 https://docs.google.com/document/d/10xOgmZmvLM-BJeak-KNXzkx7H5oqnbn834-o94WbM50/edit#heading=h.m0d3jrsts18t
 
@@ -22,6 +26,13 @@ For testing purposes use [these datasets](https://drive.google.com/drive/u/0/fol
 ## Datasets
 
 Twitter posts on various topics (1-20K): https://drive.google.com/drive/u/0/folders/1GtUZkfD0cZ2xBBZ3FiDpH1Cgw_u-m1wh
+
+## Installation
+
+```sh
+pip install -r requirements.txt
+streamlit run dashboard.py
+```
 
 ## Dataset converter tool
 
