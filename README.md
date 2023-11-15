@@ -6,7 +6,7 @@ Some stuff that was made on the 4th Bellingcat Hackathon by the team Watch Cats
 
 https://docs.google.com/document/d/10xOgmZmvLM-BJeak-KNXzkx7H5oqnbn834-o94WbM50/edit#heading=h.m0d3jrsts18t
 
-## Participants 
+## Participants
 
 @soxoj, @dizvyagintsev
 
