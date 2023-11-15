@@ -2,12 +2,23 @@ import altair as alt
 import numpy as np
 import pandas as pd
 from wordcloud import WordCloud
+from collections import Counter
 
 def find_out_tweet_type(row):
     if not 'type' in row:
         return 'regulartweet'
     else:
         return row['type']
+
+def detect_initiator(df, size=5, topic_field='hashtags_list', flat_list=[]):
+    if not flat_list:
+        topics = list(chain.from_iterable(df[topic_field].to_list()))
+        flat_list = list(sorted(topics))
+
+    counted_topics = Counter(flat_list)
+
+    return counted_topics
+
 
 # https://github.com/pournaki/twitter-explorer/blob/0b8bc766d174c3854467ea1e7280f71d74ba7276/twitterexplorer/plotting.py#L41
 def tweetdf_to_timeseries(df,frequency='1H'):
