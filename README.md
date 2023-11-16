@@ -1,6 +1,6 @@
 # Adana: Analytical DAshboard (for NArratives)
 
-1-click analytical dashboard for OSINT researchers
+📊 1-click analytical dashboard for OSINT researchers
 
 ####  👉 [Try Adana online](https://bellingcat-hackathon-watchcats-uearyc7iggn84xznppgq5k.streamlit.app/)
 
@@ -9,7 +9,10 @@
 Analytical tool to extract insights (shown on a simple dashboard) from social media posts about narratives, sentiments, initiators, influencers and clusters of accounts.
 It should be applicable for studying disinformation campaigns, analysing public opinion, and assessing risks related to some topics.
 
-[Read more in this document](https://docs.google.com/document/d/10xOgmZmvLM-BJeak-KNXzkx7H5oqnbn834-o94WbM50/edit#heading=h.m0d3jrsts18t)
+It's a project created by team Watch Cats during participation in [Bellingcat's First In-person Hackathon](https://www.bellingcat.com/bellingcats-first-in-person-hackathon/). 
+
+Inspired by [4CAT](https://4cat.nl/) and [twitter explorer](https://twitterexplorer.org/).
+The development process is documented in [this Google document](https://docs.google.com/document/d/10xOgmZmvLM-BJeak-KNXzkx7H5oqnbn834-o94WbM50/edit#heading=h.m0d3jrsts18t).
 
 # MVP
 
@@ -21,7 +24,7 @@ Available by the link: https://bellingcat-hackathon-watchcats-uearyc7iggn84xznpp
 
 ## Team members
 
-@soxoj, @dizvyagintsev
+**[@soxoj](https://soxoj.com/)**, **[@dizvyagintsev](https://github.com/dizvyagintsev)**
 
 ## Datasets
 
@@ -44,7 +47,7 @@ For private cloud installation, you need:
 2. Fork [this repository](https://github.com/soxoj/bellingcat-hackathon-watchcats/fork)
 3. Login (register) in [Streamlit](https://streamlit.io/) by GitHub account
 4. Create a new project in Streamlit from a forked repository
-5. Deploy (no payment method required)
+5. Deploy (*no payment method required!*)
 6. Voila!
 
 ## Dataset converter tool
