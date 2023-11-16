@@ -2,8 +2,13 @@ import json
 import altair as alt
 import numpy as np
 import pandas as pd
+import streamlit as st
 from wordcloud import WordCloud
 from collections import Counter
+
+@st.cache_data
+def read_data_cached(filename):
+    return pd.read_csv(filename)
 
 def input_file_to_dataframe(uploaded_file):
     # zeeschuimer support
@@ -61,7 +66,7 @@ def input_file_to_dataframe(uploaded_file):
 
         return df
     else:
-        return pd.read_csv(uploaded_file)
+        return read_data_cached(uploaded_file)
 
 
 def find_out_tweet_type(row):

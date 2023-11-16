@@ -28,7 +28,7 @@ Available by the link: https://bellingcat-hackathon-watchcats-uearyc7iggn84xznpp
 
 ## Datasets
 
-Twitter posts on various topics (1-20K): https://drive.google.com/drive/u/0/folders/1GtUZkfD0cZ2xBBZ3FiDpH1Cgw_u-m1wh
+[Twitter posts on various topics (1-20K)](https://drive.google.com/drive/u/0/folders/1GtUZkfD0cZ2xBBZ3FiDpH1Cgw_u-m1wh)
 
 Instructions:
 - [How to prepare dataset with Zeeschuimer](https://docs.google.com/document/d/19MAiqX7Vx1FcNJ44K-vSdnKDVC5gcFwtrSQiewnwW8A/edit)
@@ -50,13 +50,11 @@ For private cloud installation, you need:
 5. Deploy (*no payment method required!*)
 6. Voila!
 
-## Dataset converter tool
+## Utils
 
-Maltego export to Twitwi format:
-
-```sh
-python3 Maltego_To_TwitiCSV_Converter.py input.csv output.csv
-```
+`utils` folder contains:
+- CSV tweet datasets formatter (to Twitwi)
+- ML stuff (enrichment of datasets with sentiments and topics)
 
 ## Some other results
 

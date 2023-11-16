@@ -101,15 +101,21 @@ if __name__ == '__main__':
 	st.header(f"Top-5 hashtags")
 	st.markdown(f"""`First Tweet URL` means first appearance of a hashtag in a dataset. `Most Active User URL` means a
 		link to username of account wrote the biggest amounts of tweet with a hashtag.""")
-	first_tweets = []
-	most_active_users = []
-	for topic, _ in top_topics:
-		with_hashtags = df[df.apply(lambda x: topic in x['hashtags_list'], axis=1)]
-		first_tweet = with_hashtags.sort_values(by="timestamp_utc")[:1]
-		most_active = with_hashtags.groupby(with_hashtags['author_url']).size().sort_values(ascending=False)[:1]
-		first_tweets.append(first_tweet['url'].values[0])
-		most_active_users.append(most_active.index.values[0])
 
+	@st.cache_data
+	def get_first_tweets_most_active_users(df, top_topics):
+		first_tweets = []
+		most_active_users = []
+		for topic, _ in top_topics:
+			with_hashtags = df[df.apply(lambda x: topic in x['hashtags_list'], axis=1)]
+			first_tweet = with_hashtags.sort_values(by="timestamp_utc")[:1]
+			most_active = with_hashtags.groupby(with_hashtags['author_url']).size().sort_values(ascending=False)[:1]
+			first_tweets.append(first_tweet['url'].values[0])
+			most_active_users.append(most_active.index.values[0])
+
+		return first_tweets, most_active_users
+
+	first_tweets, most_active_users = get_first_tweets_most_active_users(df, top_topics)
 	hashtags_df = pd.DataFrame(topics_sorted[:5])
 	hashtags_df['first_url'] = first_tweets
 	hashtags_df['most_active_user_url'] = most_active_users
