@@ -9,17 +9,17 @@
 Analytical tool to extract insights (shown on a simple dashboard) from social media posts about narratives, sentiments, initiators, influencers and clusters of accounts.
 It should be applicable for studying disinformation campaigns, analysing public opinion, and assessing risks related to some topics.
 
-https://docs.google.com/document/d/10xOgmZmvLM-BJeak-KNXzkx7H5oqnbn834-o94WbM50/edit#heading=h.m0d3jrsts18t
+[Read more in this document](https://docs.google.com/document/d/10xOgmZmvLM-BJeak-KNXzkx7H5oqnbn834-o94WbM50/edit#heading=h.m0d3jrsts18t)
 
 # MVP
 
 Available by the link: https://bellingcat-hackathon-watchcats-uearyc7iggn84xznppgq5k.streamlit.app/
 
-<img src="https://github.com/soxoj/bellingcat-hackathon-watchcats/assets/31013580/f1d86b94-f439-427e-81de-b0f8c88465c1" height="800" />
+<p align="center">
+  <img src="https://github.com/soxoj/bellingcat-hackathon-watchcats/assets/31013580/f1d86b94-f439-427e-81de-b0f8c88465c1" height="800" />
+</p>
 
-For testing purposes use [these datasets](https://drive.google.com/drive/u/0/folders/1GtUZkfD0cZ2xBBZ3FiDpH1Cgw_u-m1wh) or prepare new by instructions from [this document](https://docs.google.com/document/d/10xOgmZmvLM-BJeak-KNXzkx7H5oqnbn834-o94WbM50/edit#heading=h.1037l5l116z1)
-
-## Participants
+## Team members
 
 @soxoj, @dizvyagintsev
 
@@ -27,12 +27,25 @@ For testing purposes use [these datasets](https://drive.google.com/drive/u/0/fol
 
 Twitter posts on various topics (1-20K): https://drive.google.com/drive/u/0/folders/1GtUZkfD0cZ2xBBZ3FiDpH1Cgw_u-m1wh
 
+Instructions:
+- [How to prepare dataset with Zeeschuimer](https://docs.google.com/document/d/19MAiqX7Vx1FcNJ44K-vSdnKDVC5gcFwtrSQiewnwW8A/edit)
+- [How to prepare CSV dataset](https://docs.google.com/document/d/1TTulgfIhSEZRQODRem9ufJWXZ7tGJdHEVYSVk8Teit4/edit)
+
 ## Installation
 
+For local installation you need Python and pip installed.
 ```sh
 pip install -r requirements.txt
 streamlit run dashboard.py
 ```
+
+For private cloud installation, you need:
+1. Login (register) to GitHub
+2. Fork [this repository](https://github.com/soxoj/bellingcat-hackathon-watchcats/fork)
+3. Login (register) in [Streamlit](https://streamlit.io/) by GitHub account
+4. Create a new project in Streamlit from a forked repository
+5. Deploy (no payment method required)
+6. Voila!
 
 ## Dataset converter tool
 
