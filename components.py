@@ -1,8 +1,68 @@
+import json
 import altair as alt
 import numpy as np
 import pandas as pd
 from wordcloud import WordCloud
 from collections import Counter
+
+def input_file_to_dataframe(uploaded_file):
+    # zeeschuimer support
+    if uploaded_file.name.endswith("ndjson"):
+        df = pd.DataFrame(columns=[
+            'timestamp_utc',
+            'collected_via',
+            'c_date',
+            'text',
+            'lang',
+            'type',
+            'url',
+            "author_name",
+            "author_alias",
+            "author_image",
+            "author_url",
+        ])
+        f = uploaded_file
+
+        while True:
+            line = f.readline()
+            if not line:
+                break
+
+            structure = json.loads(line)
+            if not 'data' in structure:
+                continue
+
+            if not '__typename' in structure['data']:
+                continue
+
+            entity_type = structure['data']['__typename']
+            if entity_type != 'Tweet':
+                continue
+
+            data = structure['data']
+            tweet_id = structure["item_id"]
+            username = data['core']['user_results']['result']['legacy']['screen_name']
+            new_row = {
+                'timestamp_utc': int(structure['timestamp_collected'])/1000,
+                'collected_via':'zeechuimer',
+                'c_date': data['legacy']['created_at'],
+                'text': data['legacy']['full_text'],
+                'lang': data['legacy']['lang'],
+                'type': 'Post' if not data['legacy']['retweeted'] else 'retweet',
+                'url': f'https://twitter.com/{username}/status/{tweet_id}',
+                "author_name": data['core']['user_results']['result']['legacy']['name'],
+                "author_alias": username,
+                "author_image": data['core']['user_results']['result']['legacy']['profile_image_url_https'],
+                "author_url": f"https://twitter.com/{data['core']['user_results']['result']['legacy']['screen_name']}"
+            }
+            df.loc[len(df)] = new_row
+
+        f.close()
+
+        return df
+    else:
+        return pd.read_csv(uploaded_file)
+
 
 def find_out_tweet_type(row):
     if not 'type' in row:
@@ -18,7 +78,6 @@ def detect_initiator(df, size=5, topic_field='hashtags_list', flat_list=[]):
     counted_topics = Counter(flat_list)
 
     return counted_topics
-
 
 # https://github.com/pournaki/twitter-explorer/blob/0b8bc766d174c3854467ea1e7280f71d74ba7276/twitterexplorer/plotting.py#L41
 def tweetdf_to_timeseries(df,frequency='1H'):
@@ -77,22 +136,3 @@ def plot_timeseries(grouped_tweetdf):
     labelFontSize=12,
     titleFontSize=12,
 ).configure_legend(titleFontSize=12,labelFontSize=12)
-
-def plot_tweetlanguages(df):
-    with open (PACKAGE_DIR+'/languages.json', 'r', encoding='utf-8') as f:
-        iso_to_language = json.load(f)
-    language_to_iso = {v: k for k, v in iso_to_language.items()}
-    langcounts = pd.DataFrame(df.groupby('lang')["id"].count()).reset_index().rename(columns={'id':'tweet count','lang':'language_code'}).sort_values(by='tweet count', ascending=False)        
-    langcounts['language'] = langcounts['language_code'].apply(lambda x: iso_to_language[x])
-    langcounts_plot = langcounts.copy()
-    langcounts_plot = langcounts_plot[:10].rename(columns={'language':'language (top 10)'})
-    langbars = alt.Chart(langcounts_plot).mark_bar().encode(
-        y=alt.Y('language (top 10):N', sort='-x'),
-        x='tweet count',
-        color=alt.Color('language (top 10):N', 
-                        scale=alt.Scale(scheme='tableau10'),
-                        legend=None)
-    ).configure_axis(
-    labelFontSize=12,
-    titleFontSize=12)    
-    return langbars
