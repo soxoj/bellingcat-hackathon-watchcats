@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	df = None
 	datasets_count = 1
 	if st.button('Test example (Bellingcat 2023)', type="primary"):
-		df = pd.read_csv('data/Bellingcat.csv')
+		df = pd.read_csv('data/Bellingcat_Labeled.csv')
 
 	if df is None:
 		st.markdown(body="""Run test of example dataset analysis OR upload datasets (**you can use several**) of posts. """)
@@ -56,6 +56,9 @@ if __name__ == '__main__':
 		return hashtags_list
 
 	st.markdown(body="Refresh page or open new one for another dataset analysis")
+
+	if 'cluster_name' in df:
+		df = df.rename(columns={"cluster_name": "topic"})
 
 	if not 'timestamp_utc' in df:
 		df["datetime"] = pd.to_datetime(df["c_date"])
@@ -156,12 +159,16 @@ if __name__ == '__main__':
 	)
 
 	st.header(f"Topics and sentiments experimental stuff")
-	st.markdown(f"**Warning!** This is random data for testing purposes.")
-	s_df = pd.DataFrame(columns=['sentiment', 'topic'])
 
-	s_df['sentiment'] = np.random.randint(-10, 20, df.shape[0])
-	topics = ['putin', 'ukraine', 'russia', 'israel']
-	s_df['topic'] = np.random.choice(topics, df.shape[0])
+	if not 'sentiment' in df or not 'topic' in df:
+		st.markdown(f"**Warning!** This is random data for testing purposes.")
+		s_df = pd.DataFrame(columns=['sentiment', 'topic'])
+
+		s_df['sentiment'] = np.random.randint(-10, 10, df.shape[0])
+		topics = ['putin', 'ukraine', 'russia', 'israel']
+		s_df['topic'] = np.random.choice(topics, df.shape[0])
+	else:
+		s_df = df.copy()
 
 	topics = s_df['topic'].unique()
 	s_df['datetime'] = df['datetime']
@@ -177,3 +184,7 @@ if __name__ == '__main__':
 	topics_df = topics_df.reset_index()
 	st.dataframe(topics_df)
 	st.line_chart(topics_df, x="datetime", y="sentiment", color='topic')
+
+	fig = colored_sentiment_plot(s_df)
+	st.header(f"Topics distribution colored by mean sentiment")
+	st.pyplot(fig)

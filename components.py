@@ -3,6 +3,7 @@ import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
+import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from collections import Counter
 
@@ -101,6 +102,7 @@ def tweetdf_to_timeseries(df,frequency='1H'):
         result['total'] += result[tweettype]
     return result
 
+# zhttps://github.com/pournaki/twitter-explorer/blob/0b8bc766d174c3854467ea1e7280f71d74ba7276/twitterexplorer/plotting.py#L25
 def plot_timeseries(grouped_tweetdf):
     
     grouped_tweetdf["datetime"] = grouped_tweetdf.index
@@ -141,3 +143,54 @@ def plot_timeseries(grouped_tweetdf):
     labelFontSize=12,
     titleFontSize=12,
 ).configure_legend(titleFontSize=12,labelFontSize=12)
+
+def colored_sentiment_plot(df):
+    topic_count = {}
+    topic_sentiment = {}
+    for _, tweet in df.iterrows():
+        topic = tweet['topic']
+        sentiment = tweet['sentiment']
+        topic_count[topic] = topic_count.get(topic, 0) + 1
+        topic_sentiment[topic] = topic_sentiment.get(topic, 0) + sentiment
+
+    # Identify topics with only one tweet
+    single_tweet_topics = [topic for topic, count in topic_count.items() if count == 1]
+
+    # Reassign these topics to 'Other'
+    for topic in single_tweet_topics:
+        topic_sentiment['Other'] = topic_sentiment.get('Other', 0) + topic_sentiment.pop(topic)
+        topic_count['Other'] = topic_count.get('Other', 0) + topic_count.pop(topic)
+
+    # Calculate average sentiment for each topic
+    for topic in topic_sentiment:
+        topic_sentiment[topic] /= topic_count[topic]
+
+    # Preparing data for plotting
+    topics = list(topic_count.keys())
+    counts = [topic_count[topic] for topic in topics]
+    avg_sentiments = [topic_sentiment[topic] for topic in topics]
+
+    # Normalize sentiment values for coloring (from -10..10 to 0..1)
+    normalized_sentiments = [(sent + 10) / 20 for sent in avg_sentiments]
+
+    # Color mapping: red (-10) to yellow (0) to green (10)
+    colors = [(1 - sentiment, sentiment, 0) for sentiment in normalized_sentiments]
+
+    # Creating the bar plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bars = ax.bar(topics, counts, color=colors)
+
+    # Rotate x-axis labels
+    plt.xticks(rotation=90)
+
+    # Adding color gradient bar for reference
+    sm = plt.cm.ScalarMappable(cmap=plt.cm.RdYlGn, norm=plt.Normalize(vmin=-10, vmax=10))
+    sm.set_array([])
+    # cbar = plt.colorbar(sm, ax=ax, orientation='horizontal')
+    # cbar.set_label('Average Sentiment')
+
+    plt.xlabel('Topics')
+    plt.ylabel('Number of Tweets')
+    plt.title('Number of Tweets per Topic with Average Sentiment')
+    #plt.show()
+    return fig
