@@ -44,7 +44,7 @@ def input_file_to_dataframe(uploaded_file):
             username = data['core']['user_results']['result']['legacy']['screen_name']
             new_row = {
                 'timestamp_utc': int(structure['timestamp_collected'])/1000,
-                'collected_via':'zeechuimer',
+                'collected_via':'zeeschuimer',
                 'c_date': data['legacy']['created_at'],
                 'text': data['legacy']['full_text'],
                 'lang': data['legacy']['lang'],
@@ -70,7 +70,7 @@ def find_out_tweet_type(row):
     else:
         return row['type']
 
-def detect_initiator(df, size=5, topic_field='hashtags_list', flat_list=[]):
+def extract_topics(df, size=5, topic_field='hashtags_list', flat_list=[]):
     if not flat_list:
         topics = list(chain.from_iterable(df[topic_field].to_list()))
         flat_list = list(sorted(topics))
