@@ -94,8 +94,8 @@ def extract_topics(df, size=5, topic_field='hashtags_list', flat_list=[]):
 def tweetdf_to_timeseries(df,frequency='1H'):
     dfc = df.copy()
     ## don't plot the referenced tweets, they might go back centuries!
-    if "collected_via" in dfc.columns and dfc['collected_via'].isna().sum() > 0:
-        dfc = dfc[dfc['collected_via'].isna()]
+    # if "collected_via" in dfc.columns and dfc['collected_via'].isna().sum() > 0:
+    #     dfc = dfc[dfc['collected_via'].isna()]
     dfc['type'] = dfc.apply(lambda row: find_out_tweet_type(row), axis=1)
     dfc['ts_dt'] = pd.to_datetime(dfc['timestamp_utc'], unit= 's')    
     dfc = dfc.set_index("ts_dt")

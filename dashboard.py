@@ -42,11 +42,11 @@ if __name__ == '__main__':
 			if st.button('Test example (Russo-Ukrainian War)', type="primary", on_click=lambda: st.session_state.clear()):
 				df = read_data_cached(datasets['Russo-Ukrainian War'])
 				option = "Russo-Ukrainian War"
-		# with col3:
-		# 	if st.button('Test example (OSINT Zeeschuimer)', type="primary", on_click=lambda: st.session_state.clear()):
-		# 		f = open(datasets['OSINT Zeeschuimer'])
-		# 		df = process_ndjson_file(f)
-		# 		option = "OSINT Zeeschuimer"
+		with col3:
+			if st.button('Test example (OSINT Zeeschuimer)', type="primary", on_click=lambda: st.session_state.clear()):
+				f = open(datasets['OSINT Zeeschuimer'])
+				df = process_ndjson_file(f)
+				option = "OSINT Zeeschuimer"
 
 		if option:
 			st.markdown(f"Rendering test datest '{option}'...")
@@ -120,7 +120,9 @@ if __name__ == '__main__':
 
 		st.markdown("---")
 
-		df = df[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
+
+		if not 'collected_via' in df:
+			df = df[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
 
 		group_by_options = ["total"]
 
