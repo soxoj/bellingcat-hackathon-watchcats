@@ -42,11 +42,11 @@ if __name__ == '__main__':
 			if st.button('Test example (Russo-Ukrainian War)', type="primary", on_click=lambda: st.session_state.clear()):
 				df = read_data_cached(datasets['Russo-Ukrainian War'])
 				option = "Russo-Ukrainian War"
-		with col3:
-			if st.button('Test example (OSINT Zeeschuimer)', type="primary", on_click=lambda: st.session_state.clear()):
-				f = open(datasets['OSINT Zeeschuimer'])
-				df = process_ndjson_file(f)
-				option = "OSINT Zeeschuimer"
+		# with col3:
+		# 	if st.button('Test example (OSINT Zeeschuimer)', type="primary", on_click=lambda: st.session_state.clear()):
+		# 		f = open(datasets['OSINT Zeeschuimer'])
+		# 		df = process_ndjson_file(f)
+		# 		option = "OSINT Zeeschuimer"
 
 		if option:
 			st.markdown(f"Rendering test datest '{option}'...")
@@ -89,12 +89,11 @@ if __name__ == '__main__':
 	if 'cluster_name' in df:
 		df = df.rename(columns={"cluster_name": "topic"})
 
-
 	if not 'datetime' in df and 'c_date' in df:
-		df["datetime"] = pd.to_datetime(df["c_date"])
+		df["datetime"] = pd.to_datetime(df["c_date"]).dt.tz_localize(None)
 
 	if not 'timestamp_utc' in df and 'c_date' in df:
-		df['timestamp_utc'] = df['c_date'].apply(lambda x: datetime.strptime(x, '%d.%m.%Y %H:%M:%S').timestamp())
+		df['timestamp_utc'] = df['c_date'].apply(lambda x: int(datetime.strptime(x, '%d.%m.%Y %H:%M:%S').timestamp()))
 
 	start_datetime = datetime.fromtimestamp(df['timestamp_utc'].min())
 	end_datetime = datetime.fromtimestamp(df['timestamp_utc'].max())

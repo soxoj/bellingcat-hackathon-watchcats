@@ -49,7 +49,7 @@ def process_ndjson_file(f):
         timestamp = int(structure['timestamp_collected'])/1000
         new_row = {
             'timestamp_utc': timestamp,
-            'datetime': datetime.fromtimestamp(timestamp).strftime('%d.%m.%Y %H:%M:%S'),
+            # 'datetime': datetime.fromtimestamp(timestamp).strftime('%d.%m.%Y %H:%M:%S'),
             'collected_via':'zeeschuimer',
             'c_date': data['legacy']['created_at'],
             'text': data['legacy']['full_text'],
