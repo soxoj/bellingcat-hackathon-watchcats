@@ -55,7 +55,7 @@ For private cloud installation, you need:
 
 `utils` folder contains:
 - CSV tweet datasets formatter (to Twitwi)
-- ML stuff (enrichment of datasets with sentiments and topics)
+- `cluster_n_sentiments.ipynb`: ML stuff (enrichment of datasets with sentiments and topics)
 
 ## Some other results
 

@@ -24,8 +24,32 @@ if __name__ == '__main__':
 	if df is None:
 		df = None
 		datasets_count = 1
-		if st.button('Test example (Bellingcat 2023)', type="primary"):
-			df = pd.read_csv('data/Bellingcat_Labeled.csv')
+
+		datasets = {
+			'Bellingcat': 'data/Bellingcat_Labeled.csv',
+			'Russo-Ukrainian War': 'data/RussianUkrainianLabeled.csv',
+			'OSINT Zeeschuimer': 'data/OSINT_Zeeschuimer.ndjson',
+		}
+
+		option = ''
+
+		col1, col2, col3 = st.columns([1,1,1])
+		with col1:
+			if st.button('Test example (Bellingcat 2023 mentions)', type="primary", on_click=lambda: st.session_state.clear()):
+				df = read_data_cached(datasets['Bellingcat'])
+				option = 'Bellingcat'
+		with col2:
+			if st.button('Test example (Russo-Ukrainian War)', type="primary", on_click=lambda: st.session_state.clear()):
+				df = read_data_cached(datasets['Russo-Ukrainian War'])
+				option = "Russo-Ukrainian War"
+		with col3:
+			if st.button('Test example (OSINT Zeeschuimer)', type="primary", on_click=lambda: st.session_state.clear()):
+				f = open(datasets['OSINT Zeeschuimer'])
+				df = process_ndjson_file(f)
+				option = "OSINT Zeeschuimer"
+
+		if option:
+			st.markdown(f"Rendering test datest '{option}'...")
 
 		if df is None:
 			st.markdown(body="""Run test of example dataset analysis OR upload datasets (**you can use several**) of posts. """)
@@ -65,8 +89,11 @@ if __name__ == '__main__':
 	if 'cluster_name' in df:
 		df = df.rename(columns={"cluster_name": "topic"})
 
-	if not 'timestamp_utc' in df:
+
+	if not 'datetime' in df and 'c_date' in df:
 		df["datetime"] = pd.to_datetime(df["c_date"])
+
+	if not 'timestamp_utc' in df and 'c_date' in df:
 		df['timestamp_utc'] = df['c_date'].apply(lambda x: datetime.strptime(x, '%d.%m.%Y %H:%M:%S').timestamp())
 
 	start_datetime = datetime.fromtimestamp(df['timestamp_utc'].min())
@@ -75,7 +102,7 @@ if __name__ == '__main__':
 	datasets_count = st.session_state['datasets_count']
 	status = [
 		f"Uploaded {st.session_state['datasets_count']} dataset{'s' if datasets_count > 1 else ''}, {len(df.index)} rows.",
-		f"Start date is {start_datetime}, end date is {end_datetime}"
+		f"Dataset first date is {start_datetime}, end date is {end_datetime}"
 	]
 	st.markdown('\n'.join(status))
 
@@ -87,7 +114,7 @@ if __name__ == '__main__':
 	df['hashtags_list'] = df['text'].apply(extract_hashtags)
 
 	with st.sidebar:
-		st.title('Date Range Filter')
+		st.title('Dataset Filter')
 
 		start_date = pd.to_datetime(st.date_input('Start date: ', start_datetime))
 		end_date = pd.to_datetime(st.date_input('End date: ', end_datetime))
@@ -115,7 +142,9 @@ if __name__ == '__main__':
 				hashtags = df.explode("hashtags_list")["hashtags_list"].fillna("No hashtags").unique()
 				# st.write(hashtags)
 				hashtags = list(sorted(hashtags))
-				hashtags.remove("No hashtags")
+
+				if hashtags:
+					hashtags.remove("No hashtags")
 				hashtags.insert(0, "No hashtags")
 				selected_hashtags = st.multiselect("Hashtags: ", hashtags, key="hashtags", default=hashtags)
 
@@ -128,7 +157,7 @@ if __name__ == '__main__':
 
 				st.markdown("---")
 
-		st.radio("Breakdown by:", group_by_options, index=1, key="group_by")
+		st.radio("Breakdown by:", group_by_options, index=len(group_by_options)-1, key="group_by")
 
 	st.header(f"Distribution of tweets by time")
 	timeseries = tweetdf_to_timeseries(df, frequency="1D")
@@ -142,12 +171,20 @@ if __name__ == '__main__':
 	topics_sorted = sorted(topics.items(), key=lambda x: x[1], reverse=True)
 	top_topics = topics_sorted[:5]
 
+	demo_sentiment_topic_data = False
+	if not 'sentiment' in df or not 'topic' in df:
+		demo_sentiment_topic_data = True
+		df['sentiment'] = np.random.randint(-10, 10, df.shape[0])
+		topics = ['putin', 'ukraine', 'russia', 'israel']
+		df['topic'] = np.random.choice(topics, df.shape[0])
+
 	fig = colored_sentiment_plot(df)
-	st.header(f"Topics distribution colored by mean sentiment")
+	st.header(f"{'[DEMO] ' if demo_sentiment_topic_data else ''}Topics distribution colored by mean sentiment")
+	if demo_sentiment_topic_data:
+		st.markdown(f"**Warning!** This is data for testing purposes, generated randomly for your dataset!")
 	st.pyplot(fig)
 
 	st.header(f"Change of sentiment over time")
-
 	s_df = df.copy()
 	topics = s_df['topic'].unique()
 	s_df['datetime'] = df['datetime']
@@ -246,17 +283,9 @@ if __name__ == '__main__':
 		},
 	)
 
-	st.header(f"Topics and sentiments experimental stuff")
-
-	if not 'sentiment' in df or not 'topic' in df:
-		st.markdown(f"**Warning!** This is random data for testing purposes.")
-		s_df = pd.DataFrame(columns=['sentiment', 'topic'])
-
-		s_df['sentiment'] = np.random.randint(-10, 10, df.shape[0])
-		topics = ['putin', 'ukraine', 'russia', 'israel']
-		s_df['topic'] = np.random.choice(topics, df.shape[0])
-	else:
-		s_df = df.copy()
+	st.header(f"{'[DEMO] ' if demo_sentiment_topic_data else ''}Topics and sentiments experimental stuff")
+	if demo_sentiment_topic_data:
+		st.markdown(f"**Warning!** This is data for testing purposes, generated randomly for your dataset!")
 
 	topics = s_df['topic'].unique()
 	s_df['datetime'] = df['datetime']

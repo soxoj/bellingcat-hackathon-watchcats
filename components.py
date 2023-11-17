@@ -6,64 +6,69 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from collections import Counter
+from datetime import datetime
 
 @st.cache_data
 def read_data_cached(filename):
     return pd.read_csv(filename)
 
+def process_ndjson_file(f):
+    df = pd.DataFrame(columns=[
+        'timestamp_utc',
+        'collected_via',
+        'c_date',
+        'text',
+        'lang',
+        'type',
+        'url',
+        "author_name",
+        "author_alias",
+        "author_image",
+        "author_url",
+    ])
+    while True:
+        line = f.readline()
+        if not line:
+            break
+
+        print(line)
+        structure = json.loads(line.strip())
+        if not 'data' in structure:
+            continue
+
+        if not '__typename' in structure['data']:
+            continue
+
+        entity_type = structure['data']['__typename']
+        if entity_type != 'Tweet':
+            continue
+
+        data = structure['data']
+        tweet_id = structure["item_id"]
+        username = data['core']['user_results']['result']['legacy']['screen_name']
+        timestamp = int(structure['timestamp_collected'])/1000
+        new_row = {
+            'timestamp_utc': timestamp,
+            'datetime': datetime.fromtimestamp(timestamp).strftime('%d.%m.%Y %H:%M:%S'),
+            'collected_via':'zeeschuimer',
+            'c_date': data['legacy']['created_at'],
+            'text': data['legacy']['full_text'],
+            'lang': data['legacy']['lang'],
+            'type': 'Post' if not data['legacy']['retweeted'] else 'retweet',
+            'url': f'https://twitter.com/{username}/status/{tweet_id}',
+            "author_name": data['core']['user_results']['result']['legacy']['name'],
+            "author_alias": username,
+            "author_image": data['core']['user_results']['result']['legacy']['profile_image_url_https'],
+            "author_url": f"https://twitter.com/{data['core']['user_results']['result']['legacy']['screen_name']}"
+        }
+        df.loc[len(df)] = new_row
+    return df
+
 def input_file_to_dataframe(uploaded_file):
     # zeeschuimer support
     if uploaded_file.name.endswith("ndjson"):
-        df = pd.DataFrame(columns=[
-            'timestamp_utc',
-            'collected_via',
-            'c_date',
-            'text',
-            'lang',
-            'type',
-            'url',
-            "author_name",
-            "author_alias",
-            "author_image",
-            "author_url",
-        ])
-        f = uploaded_file
-
-        while True:
-            line = f.readline()
-            if not line:
-                break
-
-            structure = json.loads(line)
-            if not 'data' in structure:
-                continue
-
-            if not '__typename' in structure['data']:
-                continue
-
-            entity_type = structure['data']['__typename']
-            if entity_type != 'Tweet':
-                continue
-
-            data = structure['data']
-            tweet_id = structure["item_id"]
-            username = data['core']['user_results']['result']['legacy']['screen_name']
-            new_row = {
-                'timestamp_utc': int(structure['timestamp_collected'])/1000,
-                'collected_via':'zeeschuimer',
-                'c_date': data['legacy']['created_at'],
-                'text': data['legacy']['full_text'],
-                'lang': data['legacy']['lang'],
-                'type': 'Post' if not data['legacy']['retweeted'] else 'retweet',
-                'url': f'https://twitter.com/{username}/status/{tweet_id}',
-                "author_name": data['core']['user_results']['result']['legacy']['name'],
-                "author_alias": username,
-                "author_image": data['core']['user_results']['result']['legacy']['profile_image_url_https'],
-                "author_url": f"https://twitter.com/{data['core']['user_results']['result']['legacy']['screen_name']}"
-            }
-            df.loc[len(df)] = new_row
-
-        f.close()
+        df = process_ndjson_file(uploaded_file)
+        uploaded_file.close()
 
         return df
     else:
