@@ -19,7 +19,7 @@ The development process is documented in [this Google document](https://docs.goo
 Available by the link: https://bellingcat-hackathon-watchcats-uearyc7iggn84xznppgq5k.streamlit.app/
 
 <p align="center">
-  <img src="https://github.com/soxoj/bellingcat-hackathon-watchcats/assets/31013580/f1d86b94-f439-427e-81de-b0f8c88465c1" height="800" />
+  <img src="[https://github.com/soxoj/bellingcat-hackathon-watchcats/assets/31013580/f1d86b94-f439-427e-81de-b0f8c88465c1](https://github.com/soxoj/bellingcat-hackathon-watchcats/assets/31013580/96ed6aeb-4839-4db1-a945-e5162b18e677)" height="800" />
 </p>
 
 ## Team members
