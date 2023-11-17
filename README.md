@@ -33,6 +33,7 @@ Available by the link: https://bellingcat-hackathon-watchcats-uearyc7iggn84xznpp
 Instructions:
 - [How to prepare dataset with Zeeschuimer](https://docs.google.com/document/d/19MAiqX7Vx1FcNJ44K-vSdnKDVC5gcFwtrSQiewnwW8A/edit)
 - [How to prepare CSV dataset](https://docs.google.com/document/d/1TTulgfIhSEZRQODRem9ufJWXZ7tGJdHEVYSVk8Teit4/edit)
+- Check utils/cluster_n_sentiments.ipynb for instructions on how to enrich datasets with sentiments and topics
 
 ## Installation
 
