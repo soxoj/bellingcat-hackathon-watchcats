@@ -28,12 +28,14 @@ Available by the link: https://bellingcat-hackathon-watchcats-uearyc7iggn84xznpp
 
 ## Datasets
 
-[Twitter posts on various topics (1-20K)](https://drive.google.com/drive/u/0/folders/1GtUZkfD0cZ2xBBZ3FiDpH1Cgw_u-m1wh)
+[Twitter posts on various topics (1-20K)](https://drive.google.com/drive/u/0/folders/1GtUZkfD0cZ2xBBZ3FiDpH1Cgw_u-m1wh), including datasets enriched with topics and sentiments.
 
 Instructions:
 - [How to prepare dataset with Zeeschuimer](https://docs.google.com/document/d/19MAiqX7Vx1FcNJ44K-vSdnKDVC5gcFwtrSQiewnwW8A/edit)
 - [How to prepare CSV dataset](https://docs.google.com/document/d/1TTulgfIhSEZRQODRem9ufJWXZ7tGJdHEVYSVk8Teit4/edit)
 - Check utils/cluster_n_sentiments.ipynb for instructions on how to enrich datasets with sentiments and topics
+
+**How can I get topics and sentiments for my dataset?** Cause it’s a resource- and time-consuming operation, we implemented it in the Jupyter Notebook script available on our GitHub. For tweets vectorization we are using hkunlp/instructor-large model, for clusterization – MiniBatchKMeans, for the detection of topics – GPT-4-Turbo API, for the sentiment analysis of tweets – cardiffnlp/twitter-roberta-base-sentiment-latest mode. All steps are reproducible.
 
 ## Installation
 
