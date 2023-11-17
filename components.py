@@ -94,12 +94,26 @@ def tweetdf_to_timeseries(df,frequency='1H'):
     dfc['type'] = dfc.apply(lambda row: find_out_tweet_type(row), axis=1)
     dfc['ts_dt'] = pd.to_datetime(dfc['timestamp_utc'], unit= 's')    
     dfc = dfc.set_index("ts_dt")
-    grouper = dfc.groupby([pd.Grouper(freq=frequency), 'type'])
-    result = grouper['type'].count().unstack('type').fillna(0)
+    group_by = st.session_state["group_by"]
+
+    if group_by == "total":
+        return dfc.groupby(pd.Grouper(freq=frequency)).size()
+
+    # if group_by == "hashtags":
+    #     dfc = dfc.explode('hashtags_list')
+    #     group_by = 'hashtags_list'
+    #     # st.write("dfc.columns", dfc.columns)
+    #     return dfc.groupby([pd.Grouper(freq=frequency), group_by, "EntityID"]).size().unstack([group_by]).unstack(["EntityID"]).fillna(0)
+    #     # grouper = dfc.groupby([pd.Grouper(freq=frequency), group_by, "EntityID"])
+    #     # result = grouper[group_by].size()
+    #     # return result
+
+    grouper = dfc.groupby([pd.Grouper(freq=frequency), group_by])
+    result = grouper[group_by].count().unstack(group_by).fillna(0)
     existing_tweettypes = list(result.columns)
-    result['total'] = 0
-    for tweettype in existing_tweettypes:
-        result['total'] += result[tweettype]
+    # result['total'] = 0
+    # for tweettype in existing_tweettypes:
+    #     result['total'] += result[tweettype]
     return result
 
 # zhttps://github.com/pournaki/twitter-explorer/blob/0b8bc766d174c3854467ea1e7280f71d74ba7276/twitterexplorer/plotting.py#L25
@@ -166,7 +180,7 @@ def colored_sentiment_plot(df):
         topic_sentiment[topic] /= topic_count[topic]
 
     # Preparing data for plotting
-    topics = list(topic_count.keys())
+    topics = sorted(list(topic_count.keys()), key=lambda x: topic_count[x], reverse=True)
     counts = [topic_count[topic] for topic in topics]
     avg_sentiments = [topic_sentiment[topic] for topic in topics]
 
@@ -176,21 +190,21 @@ def colored_sentiment_plot(df):
     # Color mapping: red (-10) to yellow (0) to green (10)
     colors = [(1 - sentiment, sentiment, 0) for sentiment in normalized_sentiments]
 
-    # Creating the bar plot
+    # Creating the horizontal bar plot
     fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.bar(topics, counts, color=colors)
+    bars = ax.barh(topics, counts, color=colors)
 
-    # Rotate x-axis labels
-    plt.xticks(rotation=90)
+    # Rotate y-axis labels (if needed)
+    plt.yticks(rotation=0)
 
     # Adding color gradient bar for reference
     sm = plt.cm.ScalarMappable(cmap=plt.cm.RdYlGn, norm=plt.Normalize(vmin=-10, vmax=10))
     sm.set_array([])
-    # cbar = plt.colorbar(sm, ax=ax, orientation='horizontal')
+    # cbar = plt.colorbar(sm, ax=ax, orientation='vertical')
     # cbar.set_label('Average Sentiment')
 
-    plt.xlabel('Topics')
-    plt.ylabel('Number of Tweets')
+    plt.ylabel('Topics')
+    plt.xlabel('Number of Tweets')
     plt.title('Number of Tweets per Topic with Average Sentiment')
     #plt.show()
     return fig
