@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud
+from itertools import chain
 from collections import Counter
 from datetime import datetime
 
@@ -31,7 +31,6 @@ def process_ndjson_file(f):
         if not line:
             break
 
-        print(line)
         structure = json.loads(line.strip())
         if not 'data' in structure:
             continue
@@ -46,12 +45,15 @@ def process_ndjson_file(f):
         data = structure['data']
         tweet_id = structure["item_id"]
         username = data['core']['user_results']['result']['legacy']['screen_name']
-        timestamp = int(structure['timestamp_collected'])/1000
+        timestamp = structure['timestamp_collected']
+        dt = datetime.strptime(data['legacy']['created_at'],'%a %b %d %H:%M:%S +0000 %Y')
+        dt_str = datetime.strftime(dt, '%Y-%m-%d %H:%M:%S')
+
         new_row = {
-            'timestamp_utc': timestamp,
-            # 'datetime': datetime.fromtimestamp(timestamp).strftime('%d.%m.%Y %H:%M:%S'),
-            'collected_via':'zeeschuimer',
-            'c_date': data['legacy']['created_at'],
+            'collected_via':'Zeeschuimer',
+            'timestamp_utc': int(dt.timestamp()),
+            'datetime': dt,
+            'c_date': dt_str,
             'text': data['legacy']['full_text'],
             'lang': data['legacy']['lang'],
             'type': 'Post' if not data['legacy']['retweeted'] else 'retweet',
@@ -64,6 +66,15 @@ def process_ndjson_file(f):
         df.loc[len(df)] = new_row
     return df
 
+
+def process_maltego_csv_file(f):
+    df = read_data_cached(f)
+    df['timestamp_utc'] = df['c_date'].apply(lambda x: int(datetime.strptime(x, '%d.%m.%Y %H:%M:%S').timestamp()))
+    df['collected_via'] = 'Maltego'
+
+    return df
+
+
 def input_file_to_dataframe(uploaded_file):
     # zeeschuimer support
     if uploaded_file.name.endswith("ndjson"):
@@ -72,7 +83,7 @@ def input_file_to_dataframe(uploaded_file):
 
         return df
     else:
-        return read_data_cached(uploaded_file)
+        return process_maltego_csv_file(uploaded_file)
 
 
 def find_out_tweet_type(row):
@@ -81,7 +92,7 @@ def find_out_tweet_type(row):
     else:
         return row['type']
 
-def extract_topics(df, size=5, topic_field='hashtags_list', flat_list=[]):
+def extract_topics(df, size=5, topic_field='hashtags_list', flat_list=()):
     if not flat_list:
         topics = list(chain.from_iterable(df[topic_field].to_list()))
         flat_list = list(sorted(topics))
@@ -89,6 +100,21 @@ def extract_topics(df, size=5, topic_field='hashtags_list', flat_list=[]):
     counted_topics = Counter(flat_list)
 
     return counted_topics
+
+
+@st.cache_data
+def get_first_tweets_most_active_users(df, top_topics):
+    first_tweets = []
+    most_active_users = []
+    for topic, _ in top_topics:
+        with_hashtags = df[df.apply(lambda x: topic in x['hashtags_list'], axis=1)]
+        first_tweet = with_hashtags.sort_values(by="timestamp_utc")[:1]
+        most_active = with_hashtags.groupby(with_hashtags['author_url']).size().sort_values(ascending=False)[:1]
+        first_tweets.append(first_tweet['url'].values[0])
+        most_active_users.append(most_active.index.values[0])
+
+    return first_tweets, most_active_users
+
 
 # https://github.com/pournaki/twitter-explorer/blob/0b8bc766d174c3854467ea1e7280f71d74ba7276/twitterexplorer/plotting.py#L41
 def tweetdf_to_timeseries(df,frequency='1H'):

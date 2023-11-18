@@ -1,12 +1,13 @@
 import re
-import random
-from itertools import chain
 import streamlit as st
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from itertools import chain
 from datetime import datetime
+from wordcloud import WordCloud
 
-from components import *
+import components
 
 DISPLAY_DATE_SLIDER = False
 
@@ -26,7 +27,7 @@ if __name__ == '__main__':
 		datasets_count = 1
 
 		datasets = {
-			'Bellingcat': 'data/Bellingcat_Labeled.csv',
+			'Bellingcat 2023 mentions': 'data/Bellingcat_Labeled.csv',
 			'Russo-Ukrainian War': 'data/RussianUkrainianLabeled.csv',
 			'OSINT Zeeschuimer': 'data/OSINT_Zeeschuimer.ndjson',
 		}
@@ -35,18 +36,21 @@ if __name__ == '__main__':
 
 		col1, col2, col3 = st.columns([1,1,1])
 		with col1:
-			if st.button('Test example (Bellingcat 2023 mentions)', type="primary", on_click=lambda: st.session_state.clear()):
-				df = read_data_cached(datasets['Bellingcat'])
-				option = 'Bellingcat'
+			name = list(datasets.keys())[0]
+			if st.button(f'Test example ({name})', type="primary", on_click=lambda: st.session_state.clear()):
+				option = name
+				df = components.process_maltego_csv_file(datasets[name])
 		with col2:
-			if st.button('Test example (Russo-Ukrainian War)', type="primary", on_click=lambda: st.session_state.clear()):
-				df = read_data_cached(datasets['Russo-Ukrainian War'])
-				option = "Russo-Ukrainian War"
+			name = list(datasets.keys())[1]
+			if st.button(f'Test example (Russo-Ukrainian War)', type="primary", on_click=lambda: st.session_state.clear()):
+				df = components.process_maltego_csv_file(datasets[name])
+				option = name
 		with col3:
-			if st.button('Test example (OSINT Zeeschuimer)', type="primary", on_click=lambda: st.session_state.clear()):
-				f = open(datasets['OSINT Zeeschuimer'])
-				df = process_ndjson_file(f)
-				option = "OSINT Zeeschuimer"
+			name = list(datasets.keys())[2]
+			if st.button(f'Test example ({name})', type="primary", on_click=lambda: st.session_state.clear()):
+				option = name
+				f = open(datasets[option])
+				df = components.process_ndjson_file(f)
 
 		if option:
 			st.markdown(f"Rendering test datest '{option}'...")
@@ -68,9 +72,9 @@ if __name__ == '__main__':
 
 			for i in range(len(uploaded_files)):
 				if df is None:
-					df = input_file_to_dataframe(uploaded_files[i])
+					df = components.input_file_to_dataframe(uploaded_files[i])
 				else:
-					df = pd.concat([df, input_file_to_dataframe(uploaded_files[i])])
+					df = pd.concat([df, components.input_file_to_dataframe(uploaded_files[i])])
 					datasets_count += 1
 					df = df.reset_index()
 
@@ -89,11 +93,7 @@ if __name__ == '__main__':
 	if 'cluster_name' in df:
 		df = df.rename(columns={"cluster_name": "topic"})
 
-	if not 'datetime' in df and 'c_date' in df:
-		df["datetime"] = pd.to_datetime(df["c_date"]).dt.tz_localize(None)
-
-	if not 'timestamp_utc' in df and 'c_date' in df:
-		df['timestamp_utc'] = df['c_date'].apply(lambda x: int(datetime.strptime(x, '%d.%m.%Y %H:%M:%S').timestamp()))
+	df["datetime"] = pd.to_datetime(df["c_date"])
 
 	start_datetime = datetime.fromtimestamp(df['timestamp_utc'].min())
 	end_datetime = datetime.fromtimestamp(df['timestamp_utc'].max())
@@ -112,6 +112,8 @@ if __name__ == '__main__':
 
 	df['hashtags_list'] = df['text'].apply(extract_hashtags)
 
+
+
 	with st.sidebar:
 		st.title('Dataset Filter')
 
@@ -121,8 +123,8 @@ if __name__ == '__main__':
 		st.markdown("---")
 
 
-		if not 'collected_via' in df:
-			df = df[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
+		# if not 'collected_via' in df:
+		df = df[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
 
 		group_by_options = ["total"]
 
@@ -161,25 +163,25 @@ if __name__ == '__main__':
 		st.radio("Breakdown by:", group_by_options, index=len(group_by_options)-1, key="group_by")
 
 	st.header(f"Distribution of tweets by time")
-	timeseries = tweetdf_to_timeseries(df, frequency="1D")
+	timeseries = components.tweetdf_to_timeseries(df, frequency="1D")
 	# timeseries_plot = plot_timeseries(timeseries)
 	st.bar_chart(timeseries, use_container_width=True)
 
 	hashtags = list(chain.from_iterable(df['hashtags_list'].to_list()))
 	hashtags = list(sorted(hashtags))
 
-	topics = extract_topics(df, flat_list=hashtags)
+	topics = components.extract_topics(df, flat_list=hashtags)
 	topics_sorted = sorted(topics.items(), key=lambda x: x[1], reverse=True)
 	top_topics = topics_sorted[:5]
 
 	demo_sentiment_topic_data = False
-	if not 'sentiment' in df or not 'topic' in df:
+	if 'sentiment' not in df or 'topic' not in df:
 		demo_sentiment_topic_data = True
 		df['sentiment'] = np.random.randint(-10, 10, df.shape[0])
 		topics = ['putin', 'ukraine', 'russia', 'israel']
 		df['topic'] = np.random.choice(topics, df.shape[0])
 
-	fig = colored_sentiment_plot(df)
+	fig = components.colored_sentiment_plot(df)
 	st.header(f"{'[DEMO] ' if demo_sentiment_topic_data else ''}Topics distribution colored by mean sentiment")
 	if demo_sentiment_topic_data:
 		st.markdown(f"**Warning!** This is data for testing purposes, generated randomly for your dataset!")
@@ -231,24 +233,11 @@ if __name__ == '__main__':
 	st.markdown(f"""`First Tweet URL` means first appearance of a hashtag in a dataset. `Most Active User URL` means a
 		link to username of account wrote the biggest amounts of tweet with a hashtag.""")
 
-	@st.cache_data
-	def get_first_tweets_most_active_users(df, top_topics):
-		first_tweets = []
-		most_active_users = []
-		for topic, _ in top_topics:
-			with_hashtags = df[df.apply(lambda x: topic in x['hashtags_list'], axis=1)]
-			first_tweet = with_hashtags.sort_values(by="timestamp_utc")[:1]
-			most_active = with_hashtags.groupby(with_hashtags['author_url']).size().sort_values(ascending=False)[:1]
-			first_tweets.append(first_tweet['url'].values[0])
-			most_active_users.append(most_active.index.values[0])
 
-		return first_tweets, most_active_users
-
-	first_tweets, most_active_users = get_first_tweets_most_active_users(df, top_topics)
+	first_tweets, most_active_users = components.get_first_tweets_most_active_users(df, top_topics)
 	hashtags_df = pd.DataFrame(topics_sorted[:5])
 	hashtags_df['first_url'] = first_tweets
 	hashtags_df['most_active_user_url'] = most_active_users
-	# TODO: most active accounts?
 	hashtags_df.columns = ['Hashtag', 'Count', 'First Tweet URL', 'Most Active User URL']
 
 	st.dataframe(
@@ -284,7 +273,7 @@ if __name__ == '__main__':
 		},
 	)
 
-	st.header(f"{'[DEMO] ' if demo_sentiment_topic_data else ''}Topics and sentiments experimental stuff")
+	st.header(f"{'[DEMO] ' if demo_sentiment_topic_data else ''}Topics and sentiments analysis")
 	if demo_sentiment_topic_data:
 		st.markdown(f"**Warning!** This is data for testing purposes, generated randomly for your dataset!")
 
@@ -295,12 +284,9 @@ if __name__ == '__main__':
 	for topic in topics:
 		new_df = s_df[s_df['topic'] == topic].groupby(s_df['datetime'].dt.month).agg({'sentiment': 'mean', 'datetime': 'min'})
 		new_df['topic'] = topic
-		# st.dataframe(new_df)
-
 		topics_df = pd.concat([topics_df, new_df])
 
 	topics_df = topics_df.reset_index()
 	st.dataframe(topics_df)
 	# st.line_chart(topics_df, x="datetime", y="sentiment", color='topic')
-
 
