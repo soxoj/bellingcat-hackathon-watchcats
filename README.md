@@ -59,9 +59,13 @@ For private cloud installation, you need:
 - CSV tweet datasets formatter (to Twitwi)
 - `cluster_n_sentiments.ipynb`: ML stuff (enrichment of datasets with sentiments and topics)
 
+### SOWEL classification
+
+This tool uses the following OSINT techniques:
+- [SOTL-5.2. Analyse Sentiments](https://sowel.soxoj.com/sentiments)
+
 ## Some other results
 
 An example of a hashtag network built with [Twitter Explorer](https://twitterexplorer.org/) using one of the datasets
 
 <img width="958" alt="HashtagNetwork" src="https://github.com/soxoj/bellingcat-hackathon-watchcats/assets/31013580/6327e7dd-ceb1-4f26-a5b4-6961dae5957b">
-
